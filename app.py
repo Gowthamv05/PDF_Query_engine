@@ -1,24 +1,14 @@
 # app.py
-import os
 import streamlit as st
-from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
 # ----------------------------
-# 1️⃣ Load API key safely
+# 1️⃣ Get OpenAI API key from Streamlit secrets
 # ----------------------------
-# Load local .env if exists (for local testing)
-load_dotenv()
-
-# Streamlit Cloud first, fallback to local .env
-api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
-
-if not api_key:
-    st.error("❌ No OpenAI API key found. Add it in Streamlit Secrets or .env file")
-    st.stop()
+api_key = st.secrets["OPENAI_API_KEY"]
 
 # ----------------------------
 # 2️⃣ Initialize LLM and embeddings
@@ -52,7 +42,7 @@ if uploaded_file:
     chunks = text_splitter.split_text(text)
 
     # ----------------------------
-    # 6️⃣ Build FAISS vectorstore
+    # 6️⃣ Build FAISS vectorstore (pass embeddings with API key!)
     # ----------------------------
     vectorstore = FAISS.from_texts(chunks, embeddings)
 
@@ -64,7 +54,7 @@ if uploaded_file:
     question = st.text_input("Ask a question about the PDF:")
 
     if question:
-        # Retrieve top 3 relevant chunks using the same embeddings (API key passed)
+        # Retrieve top 3 similar chunks
         docs = vectorstore.similarity_search(question, k=3)
 
         # Build context for LLM
