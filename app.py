@@ -1,81 +1,84 @@
+# app.py
 import os
 import streamlit as st
+from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-# --- Load API key ---
+# ----------------------------
+# 1️⃣ Load API key safely
+# ----------------------------
+# Load local .env if exists (for local testing)
+load_dotenv()
+
+# Try Streamlit secrets first, fallback to local .env
 api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
 
 if not api_key:
-    st.error("❌ No OpenAI API key found. Please set it in Streamlit Secrets or .env file.")
+    st.error("❌ No OpenAI API key found. Add it in Streamlit Secrets or .env file")
     st.stop()
 
-# --- Streamlit UI ---
+# ----------------------------
+# 2️⃣ Initialize LLM and embeddings
+# ----------------------------
+llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=api_key)
+embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+
+# ----------------------------
+# 3️⃣ Streamlit UI
+# ----------------------------
 st.title("📄 PDF Q&A App")
+st.write("Upload a PDF, then ask questions about its content!")
 
 uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
 
 if uploaded_file:
-    # 1. Read PDF
+    # ----------------------------
+    # 4️⃣ Read PDF content
+    # ----------------------------
     pdf_reader = PdfReader(uploaded_file)
     text = "".join([page.extract_text() for page in pdf_reader.pages])
 
-    # 2. Split into chunks
+    # ----------------------------
+    # 5️⃣ Split text into chunks
+    # ----------------------------
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = text_splitter.split_text(text)
 
-    # 3. Build embeddings
-    embeddings = OpenAIEmbeddings(openai_api_key=api_key)
-
-    # 4. Store in FAISS
+    # ----------------------------
+    # 6️⃣ Store chunks in FAISS
+    # ----------------------------
     vectorstore = FAISS.from_texts(chunks, embeddings)
 
     st.success("✅ PDF processed. You can now ask questions!")
 
+    # ----------------------------
+    # 7️⃣ User asks a question
+    # ----------------------------
+    question = st.text_input("Ask a question about the PDF:")
 
-# Load API key safely
-api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+    if question:
+        # Retrieve top 3 relevant chunks
+        docs = vectorstore.similarity_search(question, k=3)
 
-if not api_key:
-    st.error("❌ No OpenAI API key found. Please add it in Streamlit Secrets or .env")
-    st.stop()
+        # Prepare context for LLM
+        context = "\n\n".join([d.page_content for d in docs])
+        prompt = f"""
+        You are an assistant. Use ONLY the context below to answer.
+        If the answer is not in the context, say:
+        'The requested data isn't available in this PDF.'
 
-# Pass key explicitly
-embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+        Context:
+        {context}
 
+        Question: {question}
+        """
 
-from dotenv import load_dotenv
-load_dotenv()
+        # Generate answer
+        answer = llm.predict(prompt)
 
-
-# 6️⃣ User question input
-question = st.text_input("Ask a question about the PDF:")
-
-if question:
-    # Search in FAISS (retrieves most relevant chunks)
-    docs = vectorstore.similarity_search(question, k=3)
-
-    # Build a prompt for the LLM
-    context = "\n\n".join([d.page_content for d in docs])
-    prompt = f"""
-    You are an assistant. Use ONLY the context below to answer.
-    If the answer is not in the context, say:
-    'The requested data isn't available in this PDF.'
-
-    Context:
-    {context}
-
-    Question: {question}
-    """
-
-    # Get response
-    answer = llm.predict(prompt)
-
-    # Show result
-    st.markdown("### 📖 Answer")
-    st.write(answer)
-
-
-
+        # Show result
+        st.markdown("### 📖 Answer")
+        st.write(answer)
