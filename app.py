@@ -33,3 +33,20 @@ if uploaded_file:
     vectorstore = FAISS.from_texts(chunks, embeddings)
 
     st.success("✅ PDF processed. You can now ask questions!")
+
+
+# Load API key safely
+api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+
+if not api_key:
+    st.error("❌ No OpenAI API key found. Please add it in Streamlit Secrets or .env")
+    st.stop()
+
+# Pass key explicitly
+embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+
+
+from dotenv import load_dotenv
+load_dotenv()
+
+
