@@ -1,3 +1,9 @@
+import os
+import streamlit as st
+
+api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+
+
 import streamlit as st
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv
@@ -8,6 +14,12 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain_openai import ChatOpenAI
+
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
+llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
+embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+
 
 # 1️⃣ Load environment variables from .env file
 load_dotenv()
@@ -54,3 +66,4 @@ if uploaded_file is not None:
             st.write("🤖 Answer:", result)
         else:
             st.write("❌ The requested data isn't available in this PDF.")
+
