@@ -50,3 +50,32 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# 6️⃣ User question input
+question = st.text_input("Ask a question about the PDF:")
+
+if question:
+    # Search in FAISS (retrieves most relevant chunks)
+    docs = vectorstore.similarity_search(question, k=3)
+
+    # Build a prompt for the LLM
+    context = "\n\n".join([d.page_content for d in docs])
+    prompt = f"""
+    You are an assistant. Use ONLY the context below to answer.
+    If the answer is not in the context, say:
+    'The requested data isn't available in this PDF.'
+
+    Context:
+    {context}
+
+    Question: {question}
+    """
+
+    # Get response
+    answer = llm.predict(prompt)
+
+    # Show result
+    st.markdown("### 📖 Answer")
+    st.write(answer)
+
+
+
