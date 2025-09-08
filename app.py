@@ -13,7 +13,7 @@ from langchain_community.vectorstores import FAISS
 # Load local .env if exists (for local testing)
 load_dotenv()
 
-# Try Streamlit secrets first, fallback to local .env
+# Streamlit Cloud first, fallback to local .env
 api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
 
 if not api_key:
@@ -39,7 +39,11 @@ if uploaded_file:
     # 4️⃣ Read PDF content
     # ----------------------------
     pdf_reader = PdfReader(uploaded_file)
-    text = "".join([page.extract_text() for page in pdf_reader.pages])
+    text = "".join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
+
+    if not text:
+        st.error("❌ Could not extract text from this PDF.")
+        st.stop()
 
     # ----------------------------
     # 5️⃣ Split text into chunks
@@ -48,7 +52,7 @@ if uploaded_file:
     chunks = text_splitter.split_text(text)
 
     # ----------------------------
-    # 6️⃣ Store chunks in FAISS
+    # 6️⃣ Build FAISS vectorstore
     # ----------------------------
     vectorstore = FAISS.from_texts(chunks, embeddings)
 
@@ -60,10 +64,10 @@ if uploaded_file:
     question = st.text_input("Ask a question about the PDF:")
 
     if question:
-        # Retrieve top 3 relevant chunks
+        # Retrieve top 3 relevant chunks using the same embeddings (API key passed)
         docs = vectorstore.similarity_search(question, k=3)
 
-        # Prepare context for LLM
+        # Build context for LLM
         context = "\n\n".join([d.page_content for d in docs])
         prompt = f"""
         You are an assistant. Use ONLY the context below to answer.
