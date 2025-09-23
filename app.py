@@ -15,8 +15,8 @@ api_key = st.secrets["OPENAI_API_KEY"]
 # ----------------------------
 # 2️⃣ Initialize LLM and embeddings
 # ----------------------------
-llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=API_KEY)
-embeddings = OpenAIEmbeddings(openai_api_key=API_KEY)
+llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=openai_api_key)
+embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
 # ----------------------------
 # 3️⃣ Streamlit UI
@@ -78,5 +78,6 @@ if uploaded_file:
         # Show result
         st.markdown("### 📖 Answer")
         st.write(answer)
+
 
 
