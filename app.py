@@ -9,14 +9,14 @@ from langchain_community.vectorstores import FAISS
 # ----------------------------
 # 1️⃣ Get OpenAI API key from Streamlit secrets
 # ----------------------------
-api_key = st.secrets["openai_api_key"]
+api_key = st.secrets["key"]
 
 
 # ----------------------------
 # 2️⃣ Initialize LLM and embeddings
 # ----------------------------
-llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=openai_api_key)
-embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=key)
+embeddings = OpenAIEmbeddings(openai_api_key=key)
 
 # ----------------------------
 # 3️⃣ Streamlit UI
@@ -78,6 +78,7 @@ if uploaded_file:
         # Show result
         st.markdown("### 📖 Answer")
         st.write(answer)
+
 
 
 
