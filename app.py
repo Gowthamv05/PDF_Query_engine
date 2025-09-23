@@ -1,5 +1,6 @@
 # app.py
 import streamlit as st
+import os
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -9,12 +10,13 @@ from langchain_community.vectorstores import FAISS
 # 1️⃣ Get OpenAI API key from Streamlit secrets
 # ----------------------------
 api_key = st.secrets["OPENAI_API_KEY"]
+os.environ["OPENAI_API_KEY"]=API_KEY
 
 # ----------------------------
 # 2️⃣ Initialize LLM and embeddings
 # ----------------------------
-llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=api_key)
-embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=API_KEY)
+embeddings = OpenAIEmbeddings(openai_api_key=API_KEY)
 
 # ----------------------------
 # 3️⃣ Streamlit UI
@@ -76,3 +78,4 @@ if uploaded_file:
         # Show result
         st.markdown("### 📖 Answer")
         st.write(answer)
+
