@@ -9,7 +9,7 @@ from langchain_community.vectorstores import FAISS
 # ----------------------------
 # 1️⃣ Get OpenAI API key from Streamlit secrets
 # ----------------------------
-api_key = st.secrets["OPENAI_API_KEY"]
+api_key = st.secrets["openai_api_ke"]
 
 
 # ----------------------------
@@ -78,6 +78,7 @@ if uploaded_file:
         # Show result
         st.markdown("### 📖 Answer")
         st.write(answer)
+
 
 
 
