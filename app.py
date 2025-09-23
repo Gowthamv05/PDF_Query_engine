@@ -40,7 +40,7 @@ if uploaded_file:
     # ----------------------------
     # 5️⃣ Split text into chunks
     # ----------------------------
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=200)
     chunks = text_splitter.split_text(text)
 
     # ----------------------------
@@ -78,6 +78,7 @@ if uploaded_file:
         # Show result
         st.markdown("### 📖 Answer")
         st.write(answer)
+
 
 
 
